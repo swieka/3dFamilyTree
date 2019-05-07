@@ -1,0 +1,71 @@
+<head>
+  <style> body { margin: 0; } </style>
+
+  <script src="//unpkg.com/d3-dsv"></script>
+  <script src="//unpkg.com/dat.gui"></script>
+  <script src="//unpkg.com/d3-octree"></script>
+  <script src="//unpkg.com/d3-force-3d"></script>
+    <script src="//unpkg.com/three"></script>
+  <script src="//unpkg.com/three-spritetext"></script>
+  <script src="//unpkg.com/3d-force-graph"></script>
+</head>
+
+<body>
+  <div id="graph"></div>
+
+  <script>
+	const elem = document.getElementById('graph')
+    const graph = ForceGraph3D()(elem)
+	  .jsonUrl('/gedcom')
+      .backgroundColor('#101020')
+      .nodeId('id')      
+      .nodeOpacity(0.9)
+	  .nodeThreeObject(node => {
+        // use a sphere as a drag handle
+        const obj = new THREE.Mesh(
+          new THREE.SphereGeometry(20),
+          new THREE.MeshBasicMaterial({ depthWrite: false, transparent: true, opacity: 0 })
+        );
+		if(node.id.startsWith("I")) {
+		  // add text sprite as child
+          const sprite = new SpriteText(`${node.GIVN}\n${node.SURN}`);
+          sprite.color = node.SEX==="M" ? 'DeepSkyBlue' : 'Violet';
+          sprite.textHeight = 8;
+          obj.add(sprite);
+		}
+        return obj;
+      })
+	  .linkWidth(1)
+	  .linkColor(link => {
+	    switch (link.REL) {
+		  case 'CHIL':
+            return 'white';
+			break;
+		  case 'HUSB':
+		    return 'DeepSkyBlue';
+            break;
+	      case 'WIFE':
+		    return 'Violet';
+            break;
+		  default:
+		    return 'white';
+			break;
+	    }
+	  }) 	  
+	  .onNodeClick(node => {
+          // Aim at node from outside it
+          const distance = 40;
+          const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
+          graph.cameraPosition(
+            { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }, // new position
+            node, // lookAt ({ x, y, z })
+            3000  // ms transition duration
+          );
+        })  
+      .onNodeHover(node => elem.style.cursor = node ? 'pointer' : null);      
+	  
+	  const linkForce = graph
+	    .d3Force('link')
+	    .distance(link => link.REL==="CHIL" ? 250 : 50);	  
+  </script>
+</body>
