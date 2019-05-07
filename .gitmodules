@@ -1,0 +1,3 @@
+[submodule "family-traces"]
+	path = family-traces
+	url = https://github.com/sjmeunier/family-traces.git
