@@ -15,6 +15,8 @@ app.get('/', (req, res) => {
 app.get('/gedcom', (req, res) => {
   res.sendFile(path.join(__dirname + '/gedcom.json'));
 });
-
+app.get('/three-spritetext.js', (req, res) => {
+  res.sendFile(path.join(__dirname + '/three-spritetext.js'));
+});
 app.listen(PORT, HOST);
 console.log(`Running on http://${HOST}:${PORT}`);
